@@ -7,7 +7,8 @@ class App:
 
     def run(self):
         self.ui_manager.header()
-        # Additional UI components and logic would go here
+        self.ui_manager.setup_page()
+        self.ui_manager.sidebar()
 
 def main():
     app = App()
