@@ -9,6 +9,7 @@ class App:
         self.ui_manager.header()
         self.ui_manager.setup_page()
         self.ui_manager.sidebar()
+        self.ui_manager.download_button()
 
 def main():
     app = App()
