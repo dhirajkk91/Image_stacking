@@ -37,19 +37,8 @@ class UIManager:
         """
         Display instructions when no files are uploaded.
         """
-        st.info("👆 Please upload 2 or more images to start stacking, or upload 1 image for enhancement.")
-        st.markdown("""
-        ### 📋 Instructions:
-        1. **Upload Images**: Use the file uploader above to select your images
-        2. **Adjust Settings**: Configure upscale factor and output format in the sidebar
-        3. **Process**: Click the processing button to enhance your images
-        4. **Download**: Save your processed image using the download button
-        
-        ### 💡 Tips:
-        - **Multiple Images**: Stack 2+ images for noise reduction and better quality
-        - **Single Image**: Enhance and upscale individual photos
-        - **Supported Formats**: PNG, JPEG, TIFF
-        """)
+        st.info("Please upload 2 or more images to start stacking, or upload 1 image for enhancement.")
+    
     
     def display_uploaded_images(self, uploaded_files) -> List[Image.Image]:
         """
@@ -92,7 +81,7 @@ class UIManager:
         Args:
             message: Error message to display
         """
-        st.error(f"❌ {message}")
+        st.error(f"{message}")
     
     def show_processing_buttons(self, num_images: int) -> Tuple[bool, bool]:
         """
@@ -104,7 +93,7 @@ class UIManager:
         Returns:
             Tuple of (stack_clicked, enhance_clicked)
         """
-        st.subheader("🚀 Processing Options")
+        st.subheader("Processing Options")
         
         col1, col2 = st.columns(2)
         
@@ -153,8 +142,8 @@ class UIManager:
             image: Processed PIL Image
             export_info: Dictionary with export information
         """
-        st.subheader("✅ Processing Complete!")
-        
+        st.subheader("Processing Complete!")
+
         # Display result image
         st.image(image, caption="Processed Image", use_column_width=True)
         
@@ -179,7 +168,7 @@ class UIManager:
             True if button was clicked
         """
         return st.download_button(
-            label="💾 Download Processed Image",
+            label="Download Processed Image",
             data=image_data,
             file_name=filename,
             mime="image/png" if filename.endswith('.png') else "image/jpeg",
@@ -193,7 +182,7 @@ class UIManager:
         Args:
             message: Success message to display
         """
-        st.success(f"✅ {message}")
+        st.success(f"{message}")
 
     def setup_page(self):
         """
@@ -225,7 +214,7 @@ class UIManager:
             
             # Upscale factor with better UX
             upscale_factor = st.slider(
-                "🔍 Upscale Factor", 
+                "Upscale Factor", 
                 min_value=1.0, 
                 max_value=4.0, 
                 value=2.0, 
@@ -235,7 +224,7 @@ class UIManager:
             
             # Output format selection
             output_format = st.selectbox(
-                "📁 Output Format", 
+                "Output Format", 
                 self.OUTPUT_FORMATS,
                 help="PNG: Lossless, larger files | JPEG: Smaller files | TIFF: Professional"
             )
@@ -244,7 +233,7 @@ class UIManager:
             jpeg_quality = None
             if output_format == "JPEG":
                 jpeg_quality = st.slider(
-                    "🎯 JPEG Quality", 
+                    "JPEG Quality", 
                     min_value=60, 
                     max_value=100, 
                     value=95,
