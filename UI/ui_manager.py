@@ -9,6 +9,192 @@ class UIManager:
     SUPPORTED_TYPES = ('png', 'jpg', 'jpeg', 'tiff')
     OUTPUT_FORMATS = ("PNG", "JPEG", "TIFF")
     
+    def setup_page_config(self):
+        """
+        Alias for setup_page method for compatibility.
+        """
+        return self.setup_page()
+    
+    def display_header(self):
+        """
+        Alias for header method for compatibility.
+        """
+        return self.header()
+    
+    def create_settings_sidebar(self) -> Dict[str, Any]:
+        """
+        Alias for sidebar method for compatibility.
+        """
+        return self.sidebar()
+    
+    def create_file_uploader(self):
+        """
+        Alias for file_uploader method for compatibility.
+        """
+        return self.file_uploader()
+    
+    def show_instructions(self):
+        """
+        Display instructions when no files are uploaded.
+        """
+        st.info("👆 Please upload 2 or more images to start stacking, or upload 1 image for enhancement.")
+        st.markdown("""
+        ### 📋 Instructions:
+        1. **Upload Images**: Use the file uploader above to select your images
+        2. **Adjust Settings**: Configure upscale factor and output format in the sidebar
+        3. **Process**: Click the processing button to enhance your images
+        4. **Download**: Save your processed image using the download button
+        
+        ### 💡 Tips:
+        - **Multiple Images**: Stack 2+ images for noise reduction and better quality
+        - **Single Image**: Enhance and upscale individual photos
+        - **Supported Formats**: PNG, JPEG, TIFF
+        """)
+    
+    def display_uploaded_images(self, uploaded_files) -> List[Image.Image]:
+        """
+        Display uploaded images and return PIL Image objects.
+        
+        Args:
+            uploaded_files: List of uploaded file objects
+            
+        Returns:
+            List of PIL Image objects
+        """
+        if not uploaded_files:
+            return []
+        
+        st.subheader(f"📁 Uploaded Images ({len(uploaded_files)})")
+        
+        images = []
+        cols = st.columns(min(len(uploaded_files), 3))
+        
+        for idx, uploaded_file in enumerate(uploaded_files):
+            try:
+                # Load image
+                image = Image.open(uploaded_file)
+                images.append(image)
+                
+                # Display in column
+                with cols[idx % 3]:
+                    st.image(image, caption=uploaded_file.name, use_column_width=True)
+                    st.caption(f"Size: {image.width}x{image.height}")
+                    
+            except Exception as e:
+                st.error(f"Error loading {uploaded_file.name}: {str(e)}")
+        
+        return images
+    
+    def show_error_message(self, message: str):
+        """
+        Display an error message.
+        
+        Args:
+            message: Error message to display
+        """
+        st.error(f"❌ {message}")
+    
+    def show_processing_buttons(self, num_images: int) -> Tuple[bool, bool]:
+        """
+        Show processing buttons based on number of images.
+        
+        Args:
+            num_images: Number of uploaded images
+            
+        Returns:
+            Tuple of (stack_clicked, enhance_clicked)
+        """
+        st.subheader("🚀 Processing Options")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if num_images >= 2:
+                stack_clicked = st.button(
+                    f"📚 Stack {num_images} Images",
+                    help="Combine multiple images for noise reduction and enhanced quality",
+                    use_container_width=True
+                )
+            else:
+                stack_clicked = False
+                st.button(
+                    "📚 Stack Images",
+                    disabled=True,
+                    help="Need 2+ images for stacking",
+                    use_container_width=True
+                )
+        
+        with col2:
+            enhance_clicked = st.button(
+                "✨ Enhance Single Image",
+                help="Upscale and enhance the first uploaded image",
+                use_container_width=True
+            )
+        
+        return stack_clicked, enhance_clicked
+    
+    def show_spinner(self, text: str):
+        """
+        Show a spinner with custom text.
+        
+        Args:
+            text: Text to display with spinner
+            
+        Returns:
+            Streamlit spinner context manager
+        """
+        return st.spinner(text)
+    
+    def display_processing_results(self, image: Image.Image, export_info: Dict[str, Any]):
+        """
+        Display processing results and image information.
+        
+        Args:
+            image: Processed PIL Image
+            export_info: Dictionary with export information
+        """
+        st.subheader("✅ Processing Complete!")
+        
+        # Display result image
+        st.image(image, caption="Processed Image", use_column_width=True)
+        
+        # Display image info
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Dimensions", export_info.get('dimensions', 'Unknown'))
+        with col2:
+            st.metric("Format", export_info.get('format', 'Unknown'))
+        with col3:
+            st.metric("Est. Size", export_info.get('size_estimate', 'Unknown'))
+    
+    def create_download_button(self, image_data: bytes, filename: str) -> bool:
+        """
+        Create a download button for processed image.
+        
+        Args:
+            image_data: Processed image as bytes
+            filename: Filename for download
+            
+        Returns:
+            True if button was clicked
+        """
+        return st.download_button(
+            label="💾 Download Processed Image",
+            data=image_data,
+            file_name=filename,
+            mime="image/png" if filename.endswith('.png') else "image/jpeg",
+            use_container_width=True
+        )
+    
+    def show_success_message(self, message: str):
+        """
+        Display a success message.
+        
+        Args:
+            message: Success message to display
+        """
+        st.success(f"✅ {message}")
+
     def setup_page(self):
         """
         this method sets up the Streamlit page configuration. 
@@ -82,18 +268,28 @@ class UIManager:
         )
         return uploaded_files or []
     
-    # button_text, data, file_name are kept random to check the UI later need to fix this
     def download_button(self, button_text="Download File", data=None, file_name="output.png"):
         """
         This method creates a download button in the Streamlit app.
         """
-        # Use test data if no data is provided
+        # Use actual data if provided, otherwise show placeholder
         if data is None:
-            data = b"Test data for download button"
+            st.info("Process an image to enable download")
+            return
+        
+        # Determine MIME type based on file extension
+        if file_name.lower().endswith('.jpg') or file_name.lower().endswith('.jpeg'):
+            mime_type = "image/jpeg"
+        elif file_name.lower().endswith('.png'):
+            mime_type = "image/png"
+        elif file_name.lower().endswith('.tiff') or file_name.lower().endswith('.tif'):
+            mime_type = "image/tiff"
+        else:
+            mime_type = "application/octet-stream"
         
         st.download_button(
             label=button_text,
             data=data,
             file_name=file_name,
-            mime="image/png"
+            mime=mime_type
         )
