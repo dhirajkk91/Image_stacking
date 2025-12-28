@@ -5,6 +5,10 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from PIL import Image
+
+# Add project root to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from image_processor.image_processing import ImageProcessor
 from UI.ui_manager import UIManager
 

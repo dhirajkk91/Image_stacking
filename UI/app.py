@@ -1,19 +1,27 @@
+"""
+Image Stacker & Quality Enhancer - Streamlit App
+
+High-performance image processing application with modular architecture.
+"""
+
+import sys
+from pathlib import Path
 import streamlit as st
-from ui_manager import UIManager
 
-class App:
-    def __init__(self):
-        self.ui_manager = UIManager()
+# Add project root to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-    def run(self):
-        self.ui_manager.header()
-        self.ui_manager.setup_page()
-        self.ui_manager.sidebar()
-        self.ui_manager.download_button()
+try:
+    from image_processor.image_stacker import ImageStackerApp
+except ImportError as e:
+    st.error(f"Import error: {e}")
+    st.info("Please install dependencies: pip install -r requirements.txt")
+    st.stop()
 
-def main():
-    app = App()
+# Initialize and run the app
+try:
+    app = ImageStackerApp()
     app.run()
-    
-if __name__ == "__main__":
-    main()
+except Exception as e:
+    st.error(f"Application error: {e}")
+    st.info("Please check your installation and try refreshing the page.")
