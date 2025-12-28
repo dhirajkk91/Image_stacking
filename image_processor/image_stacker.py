@@ -1,23 +1,44 @@
+"""
+Optimized main application coordinator with enhanced error handling and performance.
+"""
+import sys
+from pathlib import Path
 from typing import List, Optional, Dict, Any
 from PIL import Image
+from image_processor.image_processing import ImageProcessor
 from UI.ui_manager import UIManager
 
-class ImageStacker:
-    def __init__(self, ui_manager: UIManager):
-        self.ui_manager = ui_manager()
+
+class ImageStackerApp:
+    """High-performance application coordinator with optimized workflow."""
     
-    def run(self):
-        self.ui_manager.header()
-        self.ui_manager.setup_page()
-        settings = self.ui_manager.sidebar()
-        uploaded_images = self.ui_manager.file_uploader()
+    __slots__ = ('ui_manager', 'image_processor')
     
-    def handle_images(self, images: List[Image.Image], settings: Dict[str, Any]) -> Optional[Image.Image]:
-        #get uploaded images from the UI
-        uploaded_images = self.ui_manager.file_uploader()
+    def __init__(self):
+        self.ui_manager = UIManager()
+        self.image_processor = ImageProcessor()
+    
+    def run(self) -> None:
+        """Optimized application entry point."""
+        # Setup page (cached)
+        self.ui_manager.setup_page_config()
+        self.ui_manager.display_header()
         
-        #if no files are uploaded return nothing
-        if not uploaded_images:
+        # Get settings and handle uploads
+        settings = self.ui_manager.create_settings_sidebar()
+        self._handle_file_uploads(settings)
+    
+    def _handle_file_uploads(self, settings: Dict[str, Any]) -> None:
+        """
+        Optimized file upload handling with early returns.
+        
+        Args:
+            settings: Dictionary containing user settings from sidebar
+        """
+        uploaded_files = self.ui_manager.create_file_uploader()
+        
+        if not uploaded_files:
+            self.ui_manager.show_instructions()
             return
         
         # load images using PIL
